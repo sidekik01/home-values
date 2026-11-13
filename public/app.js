@@ -151,7 +151,6 @@ county.addEventListener('change',()=>{
   const isSpokane=county.value==='spokane-wa';
   address.placeholder=isSpokane?'Enter your Spokane home address':'Enter your Kootenai home address';
   document.querySelector('#county-notice').hidden=isSpokane;
-  document.querySelector('.source-assessor > span').firstChild.textContent=isSpokane?'Spokane County':'Kootenai County';
 });
 address.addEventListener('input', () => { address.setCustomValidity(''); clearSearch(); });
 function detail(title, body, open = false) { return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="detail-content">${body}</div></details>`; }
