@@ -1,1 +1,10 @@
-{"name":"home-values","version":"1.0.0","private":true,"scripts":{"build":"node build.mjs","dev":"python3 -m http.server 3000 --directory public"}}
+{
+  "name": "home-values",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node dev.cjs",
+    "test": "node --test test/*.test.cjs"
+  }
+}
