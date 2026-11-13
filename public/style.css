@@ -9,3 +9,5 @@
 
 .steps{border:0;gap:18px;padding:40px 0;margin:0 auto}.steps article{background:#294639;border-radius:8px;padding:30px;color:#fff}.steps article>span{color:#d3ddc7}.steps h3{color:#fff}.steps p{color:#e0e7dc}@media(max-width:720px){.steps{grid-template-columns:1fr;margin:0 24px;gap:12px;padding:28px 0}.steps article{padding:24px}.steps h3{font-size:14px}.steps p{font-size:12px}}
 .results details{padding:0;margin:12px 0;border:1px solid #294639;border-radius:7px;background:#fff;overflow:hidden}.results summary{padding:20px 24px;background:#294639;color:#fff}.results summary:after{color:#e0e7dc}.results summary:focus-visible{outline:3px solid #d5c697;outline-offset:-4px}.results .detail-content{padding:24px;background:#fff}@media(max-width:720px){.results summary{padding:18px}.results .detail-content{padding:20px 16px}}
+
+.availability-label{display:table;max-width:100%;margin:-12px auto 28px;padding:9px 13px;border:1px solid rgba(255,255,255,.65);border-radius:4px;color:#fff;font-size:10px;line-height:1.6;letter-spacing:.15px;text-align:center}@media(max-width:720px){.availability-label{font-size:9px;padding:8px 11px;margin-top:-12px;margin-bottom:26px}}
