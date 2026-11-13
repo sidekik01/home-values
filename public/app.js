@@ -3,7 +3,7 @@ const address = document.querySelector('#address');
 const county = document.querySelector('#county');
 const status = document.querySelector('#status');
 const results = document.querySelector('#results');
-const compare = form.querySelector('button');
+const compare = form.querySelector('.compare');
 let countyRequest;
 let detailsRequest;
 const house = '<div class="loading-house"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="m5 19 15-13 15 13M10 16v18h20V16M17 34V23h6v11"/></svg></div>';
@@ -163,3 +163,16 @@ const legal = {
 document.querySelectorAll('[data-legal]').forEach(button => button.addEventListener('click', () => { const page = legal[button.dataset.legal]; document.querySelector('#legal-title').textContent = page.title; document.querySelector('#legal-content').innerHTML = page.body; dialog.showModal(); }));
 document.querySelector('#close-dialog').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', e => { if(e.target === dialog) { const r = dialog.getBoundingClientRect(); if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
+
+const countyPicker=document.querySelector('.county-picker');
+const countyTrigger=document.querySelector('#county-trigger');
+const countyOptions=document.querySelector('#county-options');
+const countyItems=[...countyOptions.querySelectorAll('[role="option"]')];
+function closeCountyMenu(restoreFocus=false){countyOptions.hidden=true;countyTrigger.setAttribute('aria-expanded','false');if(restoreFocus)countyTrigger.focus();}
+function openCountyMenu(index=countyItems.findIndex(item=>item.dataset.value===county.value)){countyOptions.hidden=false;countyTrigger.setAttribute('aria-expanded','true');countyItems[Math.max(0,index)].focus();}
+function chooseCounty(item){const changed=county.value!==item.dataset.value;county.value=item.dataset.value;document.querySelector('#county-value').textContent=item.textContent;countyItems.forEach(option=>option.setAttribute('aria-selected',String(option===item)));closeCountyMenu(true);if(changed)county.dispatchEvent(new Event('change',{bubbles:true}));}
+countyTrigger.addEventListener('click',()=>countyOptions.hidden?openCountyMenu():closeCountyMenu());
+countyTrigger.addEventListener('keydown',event=>{if(['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();openCountyMenu(event.key==='ArrowUp'?countyItems.length-1:undefined);}else if(event.key==='Escape')closeCountyMenu();});
+countyItems.forEach((item,index)=>{item.addEventListener('click',()=>chooseCounty(item));item.addEventListener('keydown',event=>{let next;if(event.key==='ArrowDown')next=(index+1)%countyItems.length;else if(event.key==='ArrowUp')next=(index-1+countyItems.length)%countyItems.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=countyItems.length-1;else if(event.key==='Enter'||event.key===' '){event.preventDefault();chooseCounty(item);return;}else if(event.key==='Escape'){event.preventDefault();closeCountyMenu(true);return;}else if(event.key.length===1)next=countyItems.findIndex(option=>option.textContent.toLowerCase().startsWith(event.key.toLowerCase()));if(next!==undefined&&next>=0){event.preventDefault();countyItems[next].focus();}});});
+document.addEventListener('pointerdown',event=>{if(!countyPicker.contains(event.target))closeCountyMenu();});
+countyPicker.addEventListener('focusout',event=>{if(!countyPicker.contains(event.relatedTarget))closeCountyMenu();});
