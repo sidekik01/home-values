@@ -1,5 +1,6 @@
 const {createCountyClient, CountyError} = require('../lib/county.js');
-const search = createCountyClient();
+const {createKootenaiClient}=require('../lib/kootenai.js');
+const providers={'spokane-wa':createCountyClient(),'kootenai-id':createKootenaiClient()};
 module.exports = async function handler(req,res) {
   res.setHeader('Cache-Control','no-store');
   res.setHeader('X-Content-Type-Options','nosniff');
@@ -9,8 +10,9 @@ module.exports = async function handler(req,res) {
     if(Number(req.headers['content-length'])>2048) throw new CountyError('INVALID_BODY','Search request is too large.',413);
     let body=req.body;
     if(typeof body === 'string') { if(body.length>2048) throw new CountyError('INVALID_BODY','Search request is too large.',413); try { body=JSON.parse(body); } catch { throw new CountyError('INVALID_BODY','Enter an address or parcel number.',400); } }
-    if(body?.county !== undefined && body.county !== 'spokane-wa') throw new CountyError('COUNTY_NOT_CONNECTED','Kootenai County lookup is not connected yet. Select Spokane County to search available records.',422);
-    const result=await search(body?.query);
+    const county=body?.county ?? 'spokane-wa';
+    if(!Object.hasOwn(providers,county)) throw new CountyError('INVALID_COUNTY','Select Spokane County or Kootenai County.',400);
+    const result=await providers[county](body?.query);
     return res.status(200).json(result);
   } catch(error) {
     const known=error instanceof CountyError;
