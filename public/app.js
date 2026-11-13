@@ -1,5 +1,6 @@
 const form = document.querySelector('#search-form');
 const address = document.querySelector('#address');
+const county = document.querySelector('#county');
 const status = document.querySelector('#status');
 const results = document.querySelector('#results');
 const compare = form.querySelector('button');
@@ -12,6 +13,9 @@ form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!address.value.trim()) { address.setCustomValidity('Please enter your property address or parcel number.'); address.reportValidity(); return; }
   clearSearch();
+  if(county.value !== 'spokane-wa') {
+    status.hidden=false;status.innerHTML='<h2>Kootenai County lookup is coming soon</h2><p>This county’s property data isn’t connected yet. Select Spokane County to search available records.</p>';status.scrollIntoView({behavior:'smooth',block:'center'});return;
+  }
   const request = new AbortController(); countyRequest = request;
   status.hidden = false;
   status.innerHTML = house + '<h2>Looking up your county record</h2><p>Searching Spokane County parcel data…</p>';
@@ -19,7 +23,7 @@ form.addEventListener('submit', async event => {
   status.scrollIntoView({behavior:'smooth', block:'center'});
   const timeout = setTimeout(() => request.abort('timeout'), 18000);
   try {
-    const response = await fetch('/api/county',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:address.value.trim()}),signal:request.signal});
+    const response = await fetch('/api/county',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:address.value.trim(),county:county.value}),signal:request.signal});
     const data = await response.json();
     if(countyRequest !== request) return;
     if(!response.ok) throw new Error(data.error?.message || 'County search is temporarily unavailable.');
@@ -142,6 +146,13 @@ function renderCountyDetails(data){
   }
   if(data.source?.url){results.querySelectorAll('a[href="https://cp.spokanecounty.gov/scout/SCOUTDashboard/"]').forEach(link=>{link.href=data.source.url;});}
 }
+county.addEventListener('change',()=>{
+  clearSearch();address.value='';address.setCustomValidity('');
+  const isSpokane=county.value==='spokane-wa';
+  address.placeholder=isSpokane?'Enter your Spokane home address':'Enter your Kootenai home address';
+  document.querySelector('#county-notice').hidden=isSpokane;
+  document.querySelector('.source-assessor > span').firstChild.textContent=isSpokane?'Spokane County':'Kootenai County';
+});
 address.addEventListener('input', () => { address.setCustomValidity(''); clearSearch(); });
 function detail(title, body, open = false) { return `<details ${open ? 'open' : ''}><summary>${title}</summary><div class="detail-content">${body}</div></details>`; }
 const dialog = document.querySelector('#legal-dialog');
