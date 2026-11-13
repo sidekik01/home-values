@@ -35,14 +35,20 @@ The visitor confirmed the original parcel lookup works in Vercel preview. Full-d
 
 The county can change its page structure or GIS schema. The detail adapter uses identity checks and returns explicit missing/partial/error states rather than unrelated or fictional data. Data is retrieved on demand with bounded result sizes and timeouts; responses are not cached by the application. No bulk crawl is performed.
 
-Photos are not connected. Zillow and Realtor.com are not connected. Obtain licensed provider access before adding their estimates/photos.
+Embedded county JPEG/PNG images are extracted from the identity-verified SCOUT summary when present. JPEG bytes mislabeled as PNG are normalized to JPEG. Small images, labeled logos/maps/sketches, unsupported image formats, duplicates, and oversized payloads are excluded. The display labels images as county records without asserting a capture date. Single images have no carousel arrows; multiple images support buttons and keyboard navigation. Missing or broken images retain an honest fallback. Remote image links and images inserted only by county-side JavaScript are not retrieved by this adapter.
+
+Zillow and Realtor.com are not connected. Obtain licensed provider access before adding their estimates/photos.
 
 ## Verification
 
 - `npm run build`: passed.
-- `npm test`: 23 passing adapter/API tests, covering normalization, query construction, destination validation, response mapping, private-field exclusion, missing/zero values, bounded/duplicate/no results, schema changes, upstream errors, and API input validation.
+- `npm test`: 28 passing adapter/API tests, covering normalization, query construction, destination validation, response mapping, private-field exclusion, missing/zero values, bounded/duplicate/no results, schema changes, upstream errors, and API input validation.
 - Chromium UI checks with mocked API responses at desktop and 390px mobile widths: candidate confirmation, property display, missing provider/photo states, accordions, empty/error states, source text escaping, sample flow, privacy dialog, no horizontal overflow, no browser errors.
 - Local API failure path verified against the currently blocked network: returns a controlled 503 instead of fabricated data.
 - Basic live parcel lookup: confirmed by the user in Vercel preview.
 - Full SCOUT and school-boundary live verification: pending.
 - Full-detail Chromium checks with simulated responses verify all five sections, assessment graph, exact tax cents, zero-dollar transfers, source links, mobile overflow, and preservation of the basic result on detail failure.
+
+## County image verification
+
+28 data tests pass, including embedded MIME correction, invalid/duplicate/excluded sources, payload bounds, and parcel identity. Chromium checks with controlled responses confirm actual JPEG/PNG decoding, carousel buttons and keyboard, one-image controls, no-image fallback, and mobile width. Live image extraction for parcel 36282.0408 must still be checked in preview; workspace county access remains blocked. The supplied base64 image was used to identify the format, not hardcoded as a photo for arbitrary properties.

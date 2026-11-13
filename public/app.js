@@ -58,7 +58,7 @@ function showCountyProperty(property) {
   const missingHistory = '<p>This parcel feed provides a snapshot, not historical records. We haven’t retrieved this history for your property.</p>'+sourceLink+`<p>Search parcel <strong>${value(p.parcel)}</strong> on SCOUT for more information.</p>`;
   const retrieved=new Date(p.source.fetchedAt).toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
   results.innerHTML = `<div class="result-top"><div><span class="sample-badge county-badge">SPOKANE COUNTY RECORD</span><h2 id="result-title">${value(p.address || 'Parcel '+p.parcel)}</h2><p>${value([p.city,p.state,p.zip].filter(Boolean).join(' '))} · Parcel ${value(p.parcel)}</p></div><button class="text-button" id="back-search">Search another address ^</button></div>
-  <div class="county-photo-placeholder">${house}<h3>Your property, in focus.</h3><p>Property photos aren’t available in this county feed.</p></div>
+  <div class="county-photo-placeholder">${house}<h3>Your property, in focus.</h3><p>Checking the full county record for property photos…</p></div>
   <div class="value-cards"><article class="value-card"><h3>Spokane County Assessor</h3><p class="price">${currency(p.assessedValue)}</p><small>County assessed value${p.assessmentYear ? ' · Assessment year '+value(p.assessmentYear) : ' · Assessment year not provided'}${p.taxYear ? '<br>Tax year '+value(p.taxYear) : ''}</small></article><article class="value-card pending"><h3>Zillow</h3><p class="pending-label">Not connected</p><small>A Zillow estimate hasn’t been retrieved.</small></article><article class="value-card pending"><h3>realtor.com</h3><p class="pending-label">Not connected</p><small>A Realtor.com estimate hasn’t been retrieved.</small></article></div>
   <p class="data-note">Source: <a class="county-link" href="https://gisdatacatalog-spokanecounty.opendata.arcgis.com/datasets/228db1be1d6940a3b5e3f2104e470134_0" target="_blank" rel="noopener noreferrer">Spokane County public parcel data</a>. Retrieved ${value(retrieved)}. Retrieval time is not the assessment date or a guarantee of freshness. County values are for property assessment and may differ from today’s sale price. Verify details with the county.</p>
   ${detail('Property Details','<dl class="property-grid">'+field('Parcel number',p.parcel)+field('Property use',p.propertyUse)+field('County land-use code',p.propertyUseCode)+field('Lot size',p.acreage === null ? null : p.acreage+' acres')+field('Land value',p.landValue === null ? null : currency(p.landValue))+field('Taxable value',p.taxableValue === null ? null : currency(p.taxableValue))+'</dl><p>Year built, bedrooms, bathrooms, and living area are not included in this parcel feed.</p>',true)}
@@ -83,11 +83,30 @@ async function loadCountyDetails(property) {
     if(!response.ok)throw new Error(data.error?.message||'Full county details are unavailable.');
     if(data.parcel!==property.parcel)throw new Error('County record did not match the selected parcel.');
     renderCountyDetails(data);
+    renderCountyPhotos(data.photos || []);
     const asOf=data.source?.dataAsOf;
     banner.textContent=(data.source?'SCOUT details loaded'+(asOf?' · County data as of '+asOf:'')+'. ':'')+(data.warnings?.join(' ')||'');
     if(!banner.textContent)banner.textContent='County boundary information loaded.';
-  }catch(error){if(detailsRequest!==request)return;banner.textContent=request.signal.aborted?'Full county details took too long to load. Your basic record is still available.':error.message;}
+  }catch(error){if(detailsRequest!==request)return;const photoNote=results.querySelector('.county-photo-placeholder p');if(photoNote)photoNote.textContent='The county photo lookup is unavailable right now.';banner.textContent=request.signal.aborted?'Full county details took too long to load. Your basic record is still available.':error.message;}
   finally{clearTimeout(timeout);if(detailsRequest===request)detailsRequest=null;}
+}
+function renderCountyPhotos(records){
+  const placeholder=results.querySelector('.county-photo-placeholder');
+  if(!placeholder)return;
+  const photos=records.filter(photo=>typeof photo.src==='string'&&/^data:image\/(?:jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(photo.src)).slice(0,8);
+  if(!photos.length){placeholder.querySelector('p').textContent='No displayable photo was found in this county record.';return;}
+  const gallery=document.createElement('figure');gallery.className='gallery county-gallery';gallery.tabIndex=0;gallery.setAttribute('aria-label','County property images');
+  const image=document.createElement('img');image.decoding='async';
+  const caption=document.createElement('figcaption');caption.setAttribute('aria-live','polite');
+  const prev=document.createElement('button');prev.type='button';prev.className='prev';prev.setAttribute('aria-label','Previous property image');prev.textContent='<';
+  const next=document.createElement('button');next.type='button';next.className='next';next.setAttribute('aria-label','Next property image');next.textContent='>';
+  let index=0;
+  function show(){const photo=photos[index];image.alt='County assessor record image '+(index+1);image.src=photo.src;caption.textContent='Source: Spokane County Assessor · '+(index+1)+' / '+photos.length+' · Photo date not provided';prev.hidden=next.hidden=photos.length<2;}
+  function move(delta){index=(index+delta+photos.length)%photos.length;show();}
+  prev.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
+  gallery.addEventListener('keydown',event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();move(event.key==='ArrowLeft'?-1:1);}});
+  image.addEventListener('error',()=>{photos.splice(index,1);if(!photos.length){placeholder.querySelector('p').textContent='The county image could not be displayed.';gallery.replaceWith(placeholder);return;}index%=photos.length;show();});
+  gallery.append(image,caption,prev,next);placeholder.replaceWith(gallery);show();
 }
 function renderCountyDetails(data){
   const panels=[...results.querySelectorAll('details .detail-content')];
@@ -128,7 +147,7 @@ function detail(title, body, open = false) { return `<details ${open ? 'open' : 
 const dialog = document.querySelector('#legal-dialog');
 const legal = {
  privacy: {title:'Privacy policy',body:'<p>When you submit a county search, your address or parcel number is sent to our server and queried against Spokane County’s public parcel service. We do not intentionally retain search queries or store them in your browser. We do not use analytics or advertising cookies. Hosting and county providers may process requests under their own policies.</p><p>The hosting provider may process standard request information, such as IP address and browser details, to deliver and secure this website.</p><p>Zillow and Realtor.com are not connected and do not receive searches through this site. This policy will be updated as additional providers are connected.</p>'},
- terms: {title:'Terms of service',body:'<p>Home Values provides access to Spokane County public parcel records. County information may be incomplete or outdated; verify it directly with the county. Full details are extracted from the selected parcel’s SCOUT summary. School results use county boundary overlaps and do not guarantee enrollment. County assessments are for tax purposes and are not appraisals or current sale-price predictions. Zillow and Realtor.com estimates and property photos are not connected.</p><p>Home Values is independent and is not affiliated with or endorsed by Zillow, Realtor.com, or Spokane County. Their names identify the intended comparison sources. All trademarks belong to their respective owners.</p><p>When live data becomes available, availability and accuracy will vary by source. Verify property records, taxes, school assignments, and valuations directly with the relevant provider or qualified professional.</p>'}
+ terms: {title:'Terms of service',body:'<p>Home Values provides access to Spokane County public parcel records. County information may be incomplete or outdated; verify it directly with the county. Full details are extracted from the selected parcel’s SCOUT summary. School results use county boundary overlaps and do not guarantee enrollment. County assessments are for tax purposes and are not appraisals or current sale-price predictions. County record images are displayed when available and may be outdated. Zillow and Realtor.com estimates and listing photos are not connected.</p><p>Home Values is independent and is not affiliated with or endorsed by Zillow, Realtor.com, or Spokane County. Their names identify the intended comparison sources. All trademarks belong to their respective owners.</p><p>When live data becomes available, availability and accuracy will vary by source. Verify property records, taxes, school assignments, and valuations directly with the relevant provider or qualified professional.</p>'}
 };
 document.querySelectorAll('[data-legal]').forEach(button => button.addEventListener('click', () => { const page = legal[button.dataset.legal]; document.querySelector('#legal-title').textContent = page.title; document.querySelector('#legal-content').innerHTML = page.body; dialog.showModal(); }));
 document.querySelector('#close-dialog').addEventListener('click', () => dialog.close());

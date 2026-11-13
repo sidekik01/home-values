@@ -4,3 +4,5 @@
 .enrichment-note{font-size:12px;line-height:1.8;background:#edf0e7;border-radius:6px;padding:14px 18px;color:#586d4f}.data-table-wrap{overflow-x:auto;max-width:100%;margin:16px 0 20px}.data-table-wrap table{min-width:470px}.data-table-wrap td,.data-table-wrap th{white-space:normal;vertical-align:top}.detail-subheading{font-size:13px;font-weight:500;margin:26px 0 12px;color:var(--ink)}.section-source{font-size:10px;color:#818a77;margin-top:20px}.county-chart{background:#f0f2eb;border-radius:8px;margin:12px 0}
 
 .brand strong{font-weight:800;-webkit-text-stroke:.2px currentColor}
+
+.county-gallery{background:#e9ede4}.county-gallery>img{object-fit:contain}.county-gallery figcaption{max-width:calc(100% - 40px);line-height:1.6}@media(max-width:720px){.county-gallery{height:300px}.county-gallery figcaption{font-size:9px;bottom:10px;left:10px;max-width:calc(100% - 20px)}}
