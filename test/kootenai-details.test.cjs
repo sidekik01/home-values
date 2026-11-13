@@ -17,7 +17,7 @@ test('keeps finished dwelling and garage separate; transfers have no invented pr
 test('fetch verifies parcel identity before loading independent details and retains partial results',async()=>{
  const calls=[];
  const fetcher=async(raw,options)=>{const url=new URL(raw);calls.push(url);let result;
- if(url.hostname==='map.kcgov.us')result={features:[{attributes:{PID:pin,Serial:'249383',LRSN:82520}}]};
+ if(url.hostname==='map.kcgov.us')result={features:[{attributes:{PID:'P-5715-001-021-0',Serial:'249383',LRSN:82520}}]};
  else {assert.equal(options.headers.TabId,'39');assert.equal(url.searchParams.get('p'),pin);assert.equal(url.searchParams.get('a'),'82520');const module=url.searchParams.get('_m');if(module==='472')result=summary;else{if(module==='473')throw Error('Sales unavailable');const t={477:values,610:taxable,516:improvements}[module];result=url.pathname.endsWith('GetViewSettings')?t.settings:t.data;}}
  return {ok:true,headers:{get:()=>null},json:async()=>result,text:async()=>JSON.stringify(result)};
  };

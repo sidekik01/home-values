@@ -29,3 +29,14 @@ test('Kootenai handles empty, duplicate and failed county responses',async()=>{
  for(const data of [{error:{}},{}])await assert.rejects(createKootenaiClient(async()=>({ok:true,json:async()=>data}))('249383'),{code:'COUNTY_UNAVAILABLE'});
  await assert.rejects(createKootenaiClient(async()=>{throw Error('timeout');})('249383'),{code:'COUNTY_UNAVAILABLE'});
 });
+
+test('county GIS dashed PINs match normalized searches and assessor identity',async()=>{
+ const dashed='P-5715-001-021-0';
+ const canonical='P57150010210';
+ assert.equal(kootenaiWhere(normalizeKootenaiQuery(dashed)),"(PID = 'P57150010210' OR PID = 'P-5715-001-021-0')");
+ assert.equal(kootenaiWhere(normalizeKootenaiQuery(canonical)),kootenaiWhere(normalizeKootenaiQuery(dashed)));
+ const p=mapKootenaiProperty({...attrs,PID:dashed,LRSN:82520},'now');
+ assert.equal(p.parcel,canonical);assert.equal(new URL(p.source.recordURL).searchParams.get('p'),canonical);
+ const search=createKootenaiClient(async()=>({ok:true,json:async()=>({features:[{attributes:{...attrs,PID:dashed}},{attributes:attrs}]})}));
+ assert.equal((await search(canonical)).properties.length,1);
+});
