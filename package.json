@@ -1,0 +1,16 @@
+{
+  "name": "home-values",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node dev.cjs",
+    "test": "node --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2"
+  },
+  "engines": {
+    "node": ">=20.18.1"
+  }
+}
