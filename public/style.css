@@ -6,3 +6,5 @@
 .brand strong{font-weight:800;-webkit-text-stroke:.2px currentColor}
 
 .county-gallery{background:#e9ede4}.county-gallery>img{object-fit:contain}.county-gallery figcaption{max-width:calc(100% - 40px);line-height:1.6}@media(max-width:720px){.county-gallery{height:300px}.county-gallery figcaption{font-size:9px;bottom:10px;left:10px;max-width:calc(100% - 20px)}}
+
+.steps{border:0;gap:18px;padding:40px 0;margin:0 auto}.steps article{background:#294639;border-radius:8px;padding:30px;color:#fff}.steps article>span{color:#d3ddc7}.steps h3{color:#fff}.steps p{color:#e0e7dc}@media(max-width:720px){.steps{grid-template-columns:1fr;margin:0 24px;gap:12px;padding:28px 0}.steps article{padding:24px}.steps h3{font-size:14px}.steps p{font-size:12px}}
