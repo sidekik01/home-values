@@ -35,7 +35,7 @@ The visitor confirmed the original parcel lookup works in Vercel preview. Full-d
 
 The county can change its page structure or GIS schema. The detail adapter uses identity checks and returns explicit missing/partial/error states rather than unrelated or fictional data. Data is retrieved on demand with bounded result sizes and timeouts; responses are not cached by the application. No bulk crawl is performed.
 
-Photos are not connected. Zillow and Realtor.com are not connected. Obtain licensed provider access before adding their estimates/photos. **Explore a sample comparison** remains separately available and explicitly fictional.
+Photos are not connected. Zillow and Realtor.com are not connected. Obtain licensed provider access before adding their estimates/photos.
 
 ## Verification
 
